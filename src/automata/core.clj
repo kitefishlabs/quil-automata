@@ -2,12 +2,14 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]))
 
-(defn make-row [n around middle]
-  (let [c (vec (take n (repeat around)))]
+(def constants {:scale 5})
+
+(defn make-row [{:keys [n around middle scale]}]
+  (let [c (vec (take (if scale (* scale n) n) (repeat around)))]
   (assoc c (/ (count c) 2) middle)))
 
 (def first-row
-  #(make-row 200 0 1))
+  #(make-row {:n 20 :around 0 :middle 1 :scale (constants :scale)}))
 
 (defn setup []
   ; Set frame rate to 30 frames per second.
@@ -16,7 +18,7 @@
   (q/color-mode :hsb)
   ; setup function returns initial state. It contains
   ; circle color and position.
-  {:cell-size 5
+  {:scale (constants :scale)
    :rule {
           [0 0 0] 0
           [0 0 1] 1
@@ -65,7 +67,7 @@
 
   (doseq [x (map-indexed vector (last (:cells state)))
           :let [y (:row state)
-                w (:cell-size state)]]
+                w (:scale state)]]
     (if (= 1 (last x))
       (q/rect (* w (first x)) (* w y) w w)))
 
@@ -79,7 +81,7 @@
 
 (q/defsketch automata
   :title "You spin my circle right round"
-  :size [500 500]
+  :size (vec (take 2 (repeat (* (constants :scale) 100))))
   ; setup function called only once, during sketch initialization.
   :setup setup
   ; update is called on each iteration before draw is called.
